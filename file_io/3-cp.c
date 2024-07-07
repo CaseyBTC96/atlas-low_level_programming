@@ -1,103 +1,70 @@
-#include "main.h"
-#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdlib.h>
-
-char *create_buffer(char *file);
-void close_file(int fd);
+#include <stdio.h>
 
 /**
- * create_buffer - Allocates 1024 bytes for a buffer.
- * @file: The name of the file buffer is storing chars for.
+ * main - program that copies the content of a file to another file
  *
- * Return: A pointer to the newly-allocated buffer.
- */
-char *create_buffer(char *file)
-{
-	char *buffer;
-
-	buffer = malloc(sizeof(char) * 1024);
-
-	if (buffer == NULL)
-	{
-		dprintf(STDERR_FILENO,
-			"Error: Can't write to %s\n", file);
-		exit(99);
-	}
-
-	return (buffer);
-}
-
-/**
- * close_file - Closes file descriptors.
- * @fd: The file descriptor to be closed.
- */
-void close_file(int fd)
-{
-	int c;
-
-	c = close(fd);
-
-	if (c == -1)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd);
-		exit(100);
-	}
-}
-
-/**
- * main - Copies the contents of a file to another file.
- * @argc: The number of arguments supplied to the program.
- * @argv: An array of pointers to the arguments.
+ * @argc: Counts the number of parameters that go into main
+ * @argv: Pointer of array of pointers containing strings entering main
+ * Return: Always 0 on (Success)
  *
- * Return: 0 on success.
+ * if the number of argument is not the correct one, exit with code 97
+ * and print Usage: cp file_from file_to, followed by a new line,
+ * on the POSIX standard error
  *
- * Description: If the argument count is incorrect - exit code 97.
- *              If file_from does not exist or cannot be read - exit code 98.
- *              If file_to cannot be created or written to - exit code 99.
- *              If file_to or file_from cannot be closed - exit code 100.
+ * if file_from does not exist, or if you can not read it, exit with
+ * code 98 and print Error: Can't read from file NAME_OF_THE_FILE,
+ * followed by a new line, on the POSIX standard error
+ *
+ * if you can not close a file descriptor ,
+ * exit with code 100 and print Error:
+ * Can't close fd FD_VALUE, followed by a new line,
+ * on the POSIX standard error
  */
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
-	int from, to, r, w;
-	char *buffer;
+	int fdfrom, fdto, checkr, checkw, checkc1, checkc2;
+	char buff[1024];
 
 	if (argc != 3)
+		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n"), exit(97);
+
+	fdfrom = open(argv[1], O_RDONLY);
+	if (fdfrom == -1)
 	{
-		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
-		exit(97);
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
+		exit(98);
 	}
 
-	buffer = create_buffer(argv[2]);
-	from = open(argv[1], O_RDONLY);
-	r = read(from, buffer, 1024);
-	to = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC, 0664);
+	fdto = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC, 0664);
+	if (fdto == -1)
+		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]), exit(99);
 
-	do {
-		if (from == -1 || r == -1)
-		{
-			dprintf(STDERR_FILENO,
-				"Error: Can't read from file %s\n", argv[1]);
-			free(buffer);
-			exit(98);
-		}
 
-		w = write(to, buffer, r);
-		if (to == -1 || w == -1)
+	while ((checkr = read(fdfrom, buff, 1024)) > 0)
+	{
+		checkw = write(fdto, buff, checkr);
+		if (checkw != checkr)
 		{
-			dprintf(STDERR_FILENO,
-				"Error: Can't write to %s\n", argv[2]);
-			free(buffer);
+			dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]);
 			exit(99);
 		}
-
-		r = read(from, buffer, 1024);
-		to = open(argv[2], O_WRONLY | O_APPEND);
-
-	} while (r > 0);
-
-	free(buffer);
-	close_file(from);
-	close_file(to);
+	}
+	if (checkr == -1)
+	{
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
+		exit(98);
+	}
+	checkc1 = close(fdfrom);
+	if (checkc1 == -1)
+		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fdfrom), exit(100);
+	checkc2 = close(fdto);
+	if (checkc2 == -1)
+		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fdto), exit(100);
 
 	return (0);
 }
