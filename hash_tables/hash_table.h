@@ -56,3 +56,11 @@ shash_table_t *shash_table_create(unsigned long int size);
  * Return: 1 if successful, 0 otherwise
  */
 int shash_table_set(shash_table_t *ht, const char *key, const char *value);
+
+/**
+ * shash_table_get - Retrieves a value associated with a key
+ * @ht: The sorted hash table
+ * @key: The key
+ * Return: The value associated with the key, or NULL if not found
+ */
+char *shash_table_get(const shash_table_t *ht, const char *key);
