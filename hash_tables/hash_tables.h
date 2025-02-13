@@ -64,3 +64,38 @@ int shash_table_set(shash_table_t *ht, const char *key, const char *value);
  * Return: The value associated with the key, or NULL if not found
  */
 char *shash_table_get(const shash_table_t *ht, const char *key);
+
+/**
+ * shash_table_print - Prints the hash table in order
+ * @ht: The sorted hash table
+ */
+void shash_table_print(const shash_table_t *ht);
+
+/**
+ * shash_table_print_rev - Prints the hash table in reverse order
+ * @ht: The sorted hash table
+ */
+void shash_table_print_rev(const shash_table_t *ht);
+
+/**
+ * shash_table_delete - Deletes the hash table and frees memory
+ * @ht: The hash table
+ */
+void shash_table_delete(shash_table_t *ht);
+
+/**
+ * hash_djb2 - Hash function using djb2 algorithm
+ * @str: The string to hash
+ * Return: The computed hash value
+ */
+unsigned long int hash_djb2(const unsigned char *str); /* Proto hash func */
+
+/**
+ * key_index - Calculates the index for a key in the hash table
+ * @key: The key to hash
+ * @size: The size of the hash table
+ * Return: The index for the key in the hash table
+ */
+unsigned long int key_index(const unsigned char *key, unsigned long int size);
+
+#endif /* HASH_TABLES_H */
