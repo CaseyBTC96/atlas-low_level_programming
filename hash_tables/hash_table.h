@@ -47,3 +47,12 @@ typedef struct shash_table_s
  * Return: A pointer to the newly created hash table, or NULL on failure
  */
 shash_table_t *shash_table_create(unsigned long int size);
+
+/**
+ * shash_table_set - Adds an element to the sorted hash table
+ * @ht: The sorted hash table
+ * @key: The key
+ * @value: The value
+ * Return: 1 if successful, 0 otherwise
+ */
+int shash_table_set(shash_table_t *ht, const char *key, const char *value);
